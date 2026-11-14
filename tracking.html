@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="id"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Tracking Delivery Order</title><link rel="stylesheet" href="css/style.css">
+<script src="https://cdn.jsdelivr.net/npm/vue@2.7.16/dist/vue.js"></script></head>
+<body>
+<header class="top"><h1>Tracking Delivery Order</h1><a href="index.html">Menu</a><a href="stok.html">Stok</a><a href="tracking.html" class="on">Tracking DO</a></header>
+<main id="app">
+
+  <section class="panel">
+    <h2>Buat Delivery Order baru</h2>
+    <p class="note">Nomor DO dibuat otomatis: <b>{{ nomorBaru }}</b></p>
+    <div v-if="pesan" class="ok">{{ pesan }}</div>
+    <div class="row">
+      <label>NIM
+        <input v-model.trim="form.nim" :class="{bad: errors.nim}" inputmode="numeric" placeholder="9 digit angka">
+        <span class="err" v-if="errors.nim">{{ errors.nim }}</span></label>
+      <label>Nama
+        <input v-model.trim="form.nama" :class="{bad: errors.nama}">
+        <span class="err" v-if="errors.nama">{{ errors.nama }}</span></label>
+      <label>Ekspedisi
+        <select v-model="form.ekspedisi" :class="{bad: errors.ekspedisi}"><option value="">Pilih ekspedisi</option>
+          <option v-for="p in pengirimanList" :key="p.kode" :value="p.kode">{{ p.nama }}</option></select>
+        <span class="err" v-if="errors.ekspedisi">{{ errors.ekspedisi }}</span></label>
+    </div>
+    <div class="row" style="margin-top:.8rem">
+      <label>Paket bahan ajar
+        <select v-model="form.paket" :class="{bad: errors.paket}"><option value="">Pilih paket</option>
+          <option v-for="p in paket" :key="p.kode" :value="p.kode">{{ p.kode }} - {{ p.nama }}</option></select>
+        <span class="err" v-if="errors.paket">{{ errors.paket }}</span></label>
+      <label>Tanggal kirim
+        <input type="date" v-model="form.tanggalKirim" :class="{bad: errors.tanggalKirim}">
+        <span class="err" v-if="errors.tanggalKirim">{{ errors.tanggalKirim }}</span></label>
+      <label style="flex:none;min-width:0"><span>&nbsp;</span><button class="ghost" @click="form.tanggalKirim = hariIni()">Pakai hari ini</button></label>
+      <label>Total harga
+        <input :value="paketDipilih ? rupiah(paketDipilih.harga) : '-'" readonly></label>
+    </div>
+    <!-- detail isi paket muncul setelah paket dipilih -->
+    <div class="detail" v-if="paketDipilih">
+      <b>Isi {{ paketDipilih.nama }}</b>
+      <ul class="tl"><li v-for="k in paketDipilih.isi" :key="k">{{ k }} - {{ judulDari(k) }}</li></ul>
+    </div>
+    <p style="margin:.9rem 0 0"><button @click="tambah">Buat DO</button></p>
+  </section>
+
+  <section class="panel wrap">
+    <h2>Daftar DO ({{ daftar.length }})</h2>
+    <table>
+      <thead><tr><th>No. DO</th><th>Mahasiswa</th><th>Ekspedisi</th><th>Paket</th><th>Tgl kirim</th><th>Total</th><th>Status</th></tr></thead>
+      <tbody>
+        <template v-for="d in daftar">
+          <tr :key="d.noDO">
+            <td><b>{{ d.noDO }}</b></td>
+            <td>{{ d.nama }}<br><span class="note">{{ d.nim }}</span></td>
+            <td>{{ namaEkspedisi(d.ekspedisi) }}</td><td>{{ d.paket }}</td>
+            <td>{{ d.tanggalKirim }}</td><td>{{ rupiah(d.total) }}</td>
+            <td>{{ d.status }}<br>
+              <button class="ghost" v-if="d.perjalanan.length" @click="toggle(d.noDO)">{{ terbuka === d.noDO ? 'Tutup' : 'Lihat perjalanan' }}</button></td>
+          </tr>
+          <tr :key="d.noDO + '-tl'" v-show="terbuka === d.noDO">
+            <td colspan="7"><ul class="tl"><li v-for="(p, i) in d.perjalanan" :key="i"><b>{{ p.waktu }}</b> - {{ p.keterangan }}</li></ul></td>
+          </tr>
+        </template>
+      </tbody>
+    </table>
+    <div v-if="!daftar.length" class="empty">Belum ada DO. Buat DO pertama di formulir di atas.</div>
+  </section>
+</main>
+<script src="js/dataBahanAjar.js"></script>
+<script src="js/tracking-app.js"></script>
+</body></html>
